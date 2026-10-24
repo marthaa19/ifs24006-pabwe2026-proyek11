@@ -1,14 +1,13 @@
-# Blueprint Render untuk back-end (Express + SQLite).
+# Blueprint Render: satu service yang menyajikan API (Express + SQLite) sekaligus front-end (hasil build Vite).
+# Hasilnya satu link: https://ifs24006-pabwe2026-proyek1.onrender.com
 # Disk persisten (agar data SQLite tidak hilang) butuh plan berbayar (starter).
-# Front-end di-deploy terpisah ke Vercel (Root Directory = frontend).
 services:
   - type: web
-    name: lombaradar-api
+    name: ifs24006-pabwe2026-proyek1
     runtime: node
-    rootDir: backend
     plan: starter
-    buildCommand: npm install
-    startCommand: npm run seed && npm start
+    buildCommand: cd frontend && npm install && VITE_API_URL=/api npm run build && cd ../backend && npm install
+    startCommand: cd backend && npm run seed && npm start
     healthCheckPath: /api
     envVars:
       - key: NODE_VERSION

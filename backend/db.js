@@ -4,10 +4,12 @@ const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const fs = require('fs');
 
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-
-const dbPath = process.env.DB_PATH || path.join(dataDir, 'lombaradar.db');
+// Di Vercel filesystem hanya bisa ditulis di /tmp (sementara, hilang saat instance baru).
+const dbPath = process.env.DB_PATH
+  || (process.env.VERCEL ? '/tmp/lombaradar.db' : path.join(__dirname, 'data', 'lombaradar.db'));
+try {
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+} catch { /* folder sudah ada / tidak bisa dibuat; biarkan SQLite yang melapor */ }
 const db = new DatabaseSync(dbPath);
 db.exec('PRAGMA foreign_keys = ON');
 

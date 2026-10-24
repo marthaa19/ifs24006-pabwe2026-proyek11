@@ -214,8 +214,19 @@ Kata sandi disimpan sebagai hash scrypt, bukan teks asli. Menghapus sebuah lomba
 
 ## Deployment
 
-- **Back-end (Render, `render.yaml`)**: buat *Blueprint* dari repository ini. Isi `ADMIN_PASSWORD` saat diminta. `JWT_SECRET` dibuat otomatis. Setelah aktif, cek `https://<nama-service>.onrender.com/api`.
-- **Front-end (Vercel)**: impor repository, lalu atur **Root Directory = `frontend`**, Framework Preset = Vite, dan environment variable `VITE_API_URL = https://<nama-service>.onrender.com/api` (diisi sebelum build). Jangan memakai mode multi-service Vercel, karena SQLite tidak dapat menyimpan data permanen di Vercel.
+### Vercel (satu link, `vercel.json`)
+
+Dua service dalam satu project: `backend` (Express) di `/api/*` dan `frontend` (Vite) di jalur lainnya. Front-end dibuild dengan `VITE_API_URL=/api` (`frontend/.env.production`).
+
+1. Impor repository di Vercel, nama project `ifs24006-pabwe2026-proyek1`. Biarkan konfigurasi multi-service dari `vercel.json`.
+2. Tambahkan Environment Variables: `JWT_SECRET` (teks acak panjang) dan `ADMIN_PASSWORD`.
+3. Deploy. Aplikasi ada di `https://ifs24006-pabwe2026-proyek1.vercel.app`, API di `/api`.
+
+Catatan: di Vercel, SQLite disimpan di `/tmp` sehingga bersifat sementara. Data awal dan akun admin dibuat ulang otomatis saat instance baru, tetapi akun dan lomba yang ditambahkan pengguna dapat hilang.
+
+### Render (alternatif, data permanen)
+
+`render.yaml` menjalankan API sekaligus menyajikan front-end hasil build dalam satu service dengan disk persisten (plan berbayar).
 
 ## Pengujian dan Deployment (Jenkins)
 
