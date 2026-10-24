@@ -1,6 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 require('./db');
+
+// Di hosting serverless database dibuat ulang saat instance baru menyala.
+// AUTO_SEED=true mengisi kategori, lomba contoh, dan akun admin secara otomatis.
+if (process.env.AUTO_SEED === 'true') require('./seed.js');
 const { optionalAuth } = require('./auth');
 
 const app = express();

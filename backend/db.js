@@ -4,10 +4,10 @@ const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const fs = require('fs');
 
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-
-const dbPath = process.env.DB_PATH || path.join(dataDir, 'lombaradar.db');
+// Lokasi database: atur lewat DB_PATH (mis. /tmp/lombaradar.db di hosting serverless
+// yang sistem filenya hanya-baca). Bawaan: backend/data/lombaradar.db.
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'data', 'lombaradar.db');
+if (dbPath !== ':memory:') fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = new DatabaseSync(dbPath);
 db.exec('PRAGMA foreign_keys = ON');
 
