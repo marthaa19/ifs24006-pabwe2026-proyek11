@@ -214,7 +214,18 @@ Kata sandi disimpan sebagai hash scrypt, bukan teks asli. Menghapus sebuah lomba
 
 ## Pengujian dan Deployment (Jenkins)
 
-`ISI_RINGKASAN_PIPELINE_JENKINS`
+### Menjalankan test secara lokal
+
+```bash
+cd backend && npm test        # 79 test: unit auth + integrasi API (node:test, DB sementara)
+cd frontend && npm install && npm test   # Vitest + React Testing Library
+```
+
+### Pipeline Jenkins
+
+File `Jenkinsfile` di akar repository menjalankan tahap berikut secara berurutan: info lingkungan, back-end install, back-end test, front-end install, front-end test, front-end build. Hasil test dilaporkan ke Jenkins dalam format JUnit (`test-results/junit.xml`).
+
+`ISI_RINGKASAN_PIPELINE_JENKINS` (tambahkan tangkapan layar hasil build Jenkins di sini)
 
 ## Lisensi
 
