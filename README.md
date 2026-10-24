@@ -38,6 +38,7 @@ Proyek 1 mata kuliah **Pengembangan Aplikasi Berbasis Web (PABWE) 2026**, dikerj
 - Halaman detail lomba.
 - Tambah, ubah, dan hapus lomba (CRUD) dengan validasi di sisi server.
 - Simpan lomba ke daftar bookmark, lengkap dengan catatan pribadi yang bisa diedit.
+- Daftar akun dan masuk (autentikasi berbasis token). Ada dua peran: **admin** dan **mahasiswa**. Tamu boleh melihat daftar dan detail lomba. Mahasiswa dapat menambah lomba, mengubah dan menghapus lomba miliknya sendiri, serta menyimpan bookmark pribadi. Admin dapat mengelola semua lomba, termasuk data awal.
 
 ## Struktur Proyek
 
@@ -46,8 +47,10 @@ ifs24006-pabwe2026-proyek1/
 ├── backend/
 │   ├── server.js          # titik masuk Express
 │   ├── db.js              # koneksi SQLite dan pembuatan tabel
+│   ├── auth.js            # hash kata sandi, token, middleware
 │   ├── seed.js            # data awal
 │   ├── routes/
+│   │   ├── auth.js
 │   │   ├── kategori.js
 │   │   ├── lomba.js
 │   │   └── bookmark.js
@@ -56,9 +59,10 @@ ifs24006-pabwe2026-proyek1/
     ├── src/
     │   ├── App.jsx        # layout dan routing
     │   ├── api.js         # pemanggilan API
+    │   ├── AuthContext.jsx # status akun yang sedang masuk
     │   ├── utils.js       # format tanggal dan hitung deadline
     │   ├── components/LombaRow.jsx
-    │   └── pages/         # Beranda, Detail, FormLomba, Tersimpan
+    │   └── pages/         # Beranda, Detail, FormLomba, Tersimpan, Auth
     ├── .env.example
     └── package.json
 ```
@@ -117,7 +121,14 @@ Front-end berjalan di `http://localhost:5173`.
 |---|---|---|---|
 | `PORT` | back-end | `3000` | Port server API |
 | `DB_PATH` | back-end | `backend/data/lombaradar.db` | Lokasi file SQLite |
+| `ADMIN_EMAIL` | back-end (saat seed) | `admin@lombaradar.id` | Email akun admin yang dibuat oleh `npm run seed` |
+| `ADMIN_PASSWORD` | back-end (saat seed) | `admin123` | Kata sandi akun admin. **Ganti saat deploy** |
+| `JWT_SECRET` | back-end | kunci bawaan (hanya untuk lokal) | Kunci penanda token. **Wajib diganti dengan teks acak yang panjang saat deploy** |
 | `VITE_API_URL` | front-end (`.env`) | `http://localhost:3000/api` | Alamat API yang dipanggil front-end |
+
+### Akun admin
+
+`npm run seed` membuat akun admin (bawaan lokal: `admin@lombaradar.id` / `admin123`). Untuk memakai email sendiri, atur `ADMIN_EMAIL` dan `ADMIN_PASSWORD` sebelum seed (di PowerShell: `$env:ADMIN_EMAIL="emailku@contoh.com"; $env:ADMIN_PASSWORD="sandi-kuat"; npm run seed`). Jika emailnya sudah terdaftar, akun tersebut dijadikan admin.
 
 ### Build front-end untuk produksi
 
@@ -136,16 +147,21 @@ Base URL: `http://localhost:3000/api`
 | Metode | Endpoint | Keterangan |
 |---|---|---|
 | GET | `/api` | Cek status API |
+| POST | `/auth/register` | Daftar akun. Body: `{ "nama", "email", "password" }` (kata sandi minimal 6 karakter). Mengembalikan `{ token, user }` |
+| POST | `/auth/login` | Masuk. Body: `{ "email", "password" }`. Mengembalikan `{ token, user }` |
+| GET | `/auth/me` | Data akun yang sedang masuk (perlu token) |
 | GET | `/kategori` | Daftar kategori |
 | POST | `/kategori` | Tambah kategori. Body: `{ "nama": "..." }` |
 | GET | `/lomba` | Daftar lomba (mendukung filter, lihat di bawah) |
 | GET | `/lomba/:id` | Detail satu lomba |
-| POST | `/lomba` | Tambah lomba |
-| PUT | `/lomba/:id` | Ubah lomba |
-| DELETE | `/lomba/:id` | Hapus lomba |
-| GET | `/bookmark` | Daftar lomba tersimpan, diurutkan dari deadline terdekat |
-| POST | `/bookmark` | Simpan lomba atau perbarui catatannya. Body: `{ "lomba_id": 1, "catatan": "..." }` |
-| DELETE | `/bookmark/:lomba_id` | Hapus lomba dari simpanan |
+| POST | `/lomba` | Tambah lomba (perlu token) |
+| PUT | `/lomba/:id` | Ubah lomba (perlu token; admin atau pemilik lomba) |
+| DELETE | `/lomba/:id` | Hapus lomba (perlu token; admin atau pemilik lomba) |
+| GET | `/bookmark` | Daftar lomba tersimpan milik akun, diurutkan dari deadline terdekat (perlu token) |
+| POST | `/bookmark` | Simpan lomba atau perbarui catatannya. Body: `{ "lomba_id": 1, "catatan": "..." }` (perlu token) |
+| DELETE | `/bookmark/:lomba_id` | Hapus lomba dari simpanan (perlu token) |
+
+Endpoint yang bertanda "perlu token" membutuhkan header `Authorization: Bearer <token>`.
 
 **Parameter query `GET /lomba`**
 
@@ -178,19 +194,23 @@ curl -X POST http://localhost:3000/api/lomba \
 |---|---|
 | 200 / 201 | Berhasil / berhasil dibuat |
 | 400 | Data tidak valid, pesan ada di field `error` |
+| 401 | Belum masuk, token tidak valid, atau email/kata sandi salah |
+| 403 | Tidak berhak mengubah atau menghapus lomba milik orang lain |
 | 404 | Data atau endpoint tidak ditemukan |
-| 409 | Data sudah ada (kategori duplikat) |
+| 409 | Data sudah ada (kategori duplikat atau email sudah terdaftar) |
 
 ## Skema Database
 
 ```
+users     (id, nama, email UNIQUE, password_hash, role, created_at)
 kategori  (id, nama UNIQUE)
-lomba     (id, judul, penyelenggara, kategori_id -> kategori.id, deskripsi, tingkat,
+lomba     (id, created_by -> users.id, judul, penyelenggara, kategori_id -> kategori.id, deskripsi, tingkat,
            mode, hadiah, biaya, deadline, link_pendaftaran, created_at)
-bookmark  (id, lomba_id UNIQUE -> lomba.id ON DELETE CASCADE, catatan, created_at)
+bookmark  (id, user_id -> users.id, lomba_id -> lomba.id, catatan, created_at,
+           UNIQUE (user_id, lomba_id), keduanya ON DELETE CASCADE)
 ```
 
-Menghapus sebuah lomba otomatis menghapus bookmark yang terkait.
+Kata sandi disimpan sebagai hash scrypt, bukan teks asli. Menghapus sebuah lomba otomatis menghapus bookmark yang terkait.
 
 ## Pengujian dan Deployment (Jenkins)
 

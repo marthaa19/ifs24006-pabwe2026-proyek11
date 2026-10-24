@@ -50,4 +50,21 @@ function run() {
   }
 }
 
+// Akun admin: dibuat (atau dipromosikan) setiap seed dijalankan.
+// Atur lewat ADMIN_EMAIL dan ADMIN_PASSWORD; nilai bawaan hanya untuk pengembangan lokal.
+function buatAdmin() {
+  const { hashPassword } = require('./auth');
+  const email = (process.env.ADMIN_EMAIL || 'admin@lombaradar.id').trim().toLowerCase();
+  const ada = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+  if (ada) {
+    db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(ada.id);
+    console.log(`Akun ${email} dijadikan admin.`);
+    return;
+  }
+  db.prepare("INSERT INTO users (nama, email, password_hash, role) VALUES (?, ?, ?, 'admin')")
+    .run('Admin', email, hashPassword(process.env.ADMIN_PASSWORD || 'admin123'));
+  console.log(`Akun admin dibuat: ${email}`);
+}
+
+buatAdmin();
 run();

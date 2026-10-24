@@ -1,17 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 require('./db');
+const { optionalAuth } = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(optionalAuth);
 
 app.get('/api', (req, res) => {
   res.json({ nama: 'LombaRadar API', status: 'ok' });
 });
 
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/kategori', require('./routes/kategori'));
 app.use('/api/lomba', require('./routes/lomba'));
 app.use('/api/bookmark', require('./routes/bookmark'));

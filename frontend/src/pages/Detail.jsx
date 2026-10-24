@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
+import { useAuth } from '../AuthContext.jsx';
 import { formatTanggal, infoDeadline } from '../utils.js';
 
 export default function Detail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [lomba, setLomba] = useState(null);
   const [catatan, setCatatan] = useState('');
   const [error, setError] = useState('');
@@ -123,10 +125,12 @@ export default function Detail() {
         )}
       </section>
 
-      <section className="admin">
-        <Link className="btn btn--ghost" to={`/lomba/${lomba.id}/edit`}>Edit lomba</Link>
-        <button type="button" className="btn btn--danger" onClick={hapus}>Hapus lomba</button>
-      </section>
+      {user && (user.role === 'admin' || lomba.created_by === user.id) && (
+        <section className="admin">
+          <Link className="btn btn--ghost" to={`/lomba/${lomba.id}/edit`}>Edit lomba</Link>
+          <button type="button" className="btn btn--danger" onClick={hapus}>Hapus lomba</button>
+        </section>
+      )}
     </article>
   );
 }

@@ -1,10 +1,13 @@
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+export const getToken = () => { try { return localStorage.getItem('lr_token'); } catch { return null; } };
+export const setToken = (t) => { try { t ? localStorage.setItem('lr_token', t) : localStorage.removeItem('lr_token'); } catch { /* abaikan */ } };
+
 async function request(path, options = {}) {
   let res;
   try {
     res = await fetch(BASE + path, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
       ...options,
     });
   } catch {
@@ -29,6 +32,9 @@ function bersihkan(params) {
 }
 
 export const api = {
+  register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+  login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  me: () => request('/auth/me'),
   getLomba: (params) => request('/lomba?' + new URLSearchParams(bersihkan(params))),
   getLombaById: (id) => request(`/lomba/${id}`),
   tambahLomba: (body) => request('/lomba', { method: 'POST', body: JSON.stringify(body) }),

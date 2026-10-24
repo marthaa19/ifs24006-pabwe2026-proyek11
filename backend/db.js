@@ -32,11 +32,32 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nama TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+// Migrasi: kolom peran pengguna dan pemilik lomba (untuk database versi lama).
+const kolomDari = (t) => db.prepare(`PRAGMA table_info(${t})`).all().map((c) => c.name);
+if (!kolomDari('users').includes('role')) db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'mahasiswa'");
+if (!kolomDari('lomba').includes('created_by')) db.exec('ALTER TABLE lomba ADD COLUMN created_by INTEGER REFERENCES users(id) ON DELETE SET NULL');
+
+// Bookmark kini milik pengguna. Tabel versi lama (tanpa user_id) dibuat ulang.
+const kolom = db.prepare('PRAGMA table_info(bookmark)').all();
+if (kolom.length > 0 && !kolom.some((k) => k.name === 'user_id')) db.exec('DROP TABLE bookmark');
+
+db.exec(`
   CREATE TABLE IF NOT EXISTS bookmark (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    lomba_id INTEGER NOT NULL UNIQUE REFERENCES lomba(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    lomba_id INTEGER NOT NULL REFERENCES lomba(id) ON DELETE CASCADE,
     catatan TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, lomba_id)
   );
 `);
 
