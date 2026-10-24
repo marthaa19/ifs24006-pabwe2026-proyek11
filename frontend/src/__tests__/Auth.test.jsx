@@ -70,6 +70,13 @@ describe('halaman Masuk', () => {
     expect(screen.getByRole('button', { name: 'Masuk' })).toBeEnabled();
   });
 
+  test('elemen form memakai id #username, #password, dan #btn-submit', () => {
+    const { container } = tampil('/masuk');
+    expect(container.querySelector('#username')).toBe(screen.getByLabelText('Email'));
+    expect(container.querySelector('#password')).toBe(screen.getByLabelText('Kata sandi'));
+    expect(container.querySelector('#btn-submit')).toBe(screen.getByRole('button', { name: 'Masuk' }));
+  });
+
   test('ada tautan ke halaman Daftar', () => {
     tampil('/masuk');
     expect(screen.getByRole('link', { name: 'Daftar' })).toHaveAttribute('href', '/daftar');
