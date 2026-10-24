@@ -36,7 +36,7 @@ async function mulaiServer(app) {
     return { status: res.status, body: data };
   }
 
-  return { server, base, req, tutup: () => new Promise((r) => server.close(r)) };
+  return { server, req, tutup: () => new Promise((r) => server.close(r)) };
 }
 
 module.exports = { siapkanDb, tanggal, mulaiServer };

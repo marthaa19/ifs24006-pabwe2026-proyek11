@@ -19,8 +19,8 @@ function tampil(awal) {
     <MemoryRouter initialEntries={[awal]}>
       <AuthProvider>
         <Routes>
-          <Route path="/auth/login" element={<Masuk />} />
-          <Route path="/auth/register" element={<Daftar />} />
+          <Route path="/masuk" element={<Masuk />} />
+          <Route path="/daftar" element={<Daftar />} />
           <Route path="/" element={<p>Halaman Beranda</p>} />
           <Route path="/tersimpan" element={<p>Halaman Tersimpan</p>} />
         </Routes>
@@ -37,7 +37,7 @@ beforeEach(() => {
 
 describe('halaman Masuk', () => {
   test('menampilkan form email dan kata sandi tanpa kolom nama', () => {
-    tampil('/auth/login');
+    tampil('/masuk');
     expect(screen.getByRole('heading', { name: 'Masuk' })).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Kata sandi')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('halaman Masuk', () => {
   test('login berhasil: memanggil API, menyimpan token, pindah ke beranda', async () => {
     api.login.mockResolvedValue({ token: 'tok', user: USER });
     const user = userEvent.setup();
-    tampil('/auth/login');
+    tampil('/masuk');
     await user.type(screen.getByLabelText('Email'), 'andi@uji.id');
     await user.type(screen.getByLabelText('Kata sandi'), 'andi123');
     await user.click(screen.getByRole('button', { name: 'Masuk' }));
@@ -60,7 +60,7 @@ describe('halaman Masuk', () => {
   test('login gagal: pesan error tampil dan tetap di halaman', async () => {
     api.login.mockRejectedValue(new Error('Email atau kata sandi salah'));
     const user = userEvent.setup();
-    tampil('/auth/login');
+    tampil('/masuk');
     await user.type(screen.getByLabelText('Email'), 'andi@uji.id');
     await user.type(screen.getByLabelText('Kata sandi'), 'salah');
     await user.click(screen.getByRole('button', { name: 'Masuk' }));
@@ -71,18 +71,18 @@ describe('halaman Masuk', () => {
   });
 
   test('ada tautan ke halaman Daftar', () => {
-    tampil('/auth/login');
-    expect(screen.getByRole('link', { name: 'Daftar' })).toHaveAttribute('href', '/auth/register');
+    tampil('/masuk');
+    expect(screen.getByRole('link', { name: 'Daftar' })).toHaveAttribute('href', '/daftar');
   });
 
   test('setelah login kembali ke halaman asal (state.dari)', async () => {
     api.login.mockResolvedValue({ token: 'tok', user: USER });
     const user = userEvent.setup();
     render(
-      <MemoryRouter initialEntries={[{ pathname: '/auth/login', state: { dari: '/tersimpan' } }]}>
+      <MemoryRouter initialEntries={[{ pathname: '/masuk', state: { dari: '/tersimpan' } }]}>
         <AuthProvider>
           <Routes>
-            <Route path="/auth/login" element={<Masuk />} />
+            <Route path="/masuk" element={<Masuk />} />
             <Route path="/tersimpan" element={<p>Halaman Tersimpan</p>} />
           </Routes>
         </AuthProvider>
@@ -97,7 +97,7 @@ describe('halaman Masuk', () => {
 
 describe('halaman Daftar', () => {
   test('menampilkan kolom nama, email, dan kata sandi', () => {
-    tampil('/auth/register');
+    tampil('/daftar');
     expect(screen.getByRole('heading', { name: 'Buat akun' })).toBeInTheDocument();
     expect(screen.getByLabelText('Nama')).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
@@ -107,7 +107,7 @@ describe('halaman Daftar', () => {
   test('daftar berhasil: memanggil register dengan semua field', async () => {
     api.register.mockResolvedValue({ token: 'tok2', user: USER });
     const user = userEvent.setup();
-    tampil('/auth/register');
+    tampil('/daftar');
     await user.type(screen.getByLabelText('Nama'), 'Andi');
     await user.type(screen.getByLabelText('Email'), 'andi@uji.id');
     await user.type(screen.getByLabelText('Kata sandi'), 'andi123');
@@ -121,7 +121,7 @@ describe('halaman Daftar', () => {
   test('daftar gagal (email sudah terdaftar) menampilkan pesan error', async () => {
     api.register.mockRejectedValue(new Error('Email sudah terdaftar'));
     const user = userEvent.setup();
-    tampil('/auth/register');
+    tampil('/daftar');
     await user.type(screen.getByLabelText('Nama'), 'Andi');
     await user.type(screen.getByLabelText('Email'), 'andi@uji.id');
     await user.type(screen.getByLabelText('Kata sandi'), 'andi123');

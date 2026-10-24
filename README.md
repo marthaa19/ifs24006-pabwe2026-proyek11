@@ -24,7 +24,7 @@ Proyek 1 mata kuliah **Pengembangan Aplikasi Berbasis Web (PABWE) 2026**, dikerj
 | Lapisan | Teknologi |
 |---|---|
 | Back-end | Express.js 4, SQLite (modul bawaan `node:sqlite`), CORS |
-| Front-end | ReactJS 18, React Router 6 (`BrowserRouter`), Vite 5 |
+| Front-end | ReactJS 18, React Router 6 (`HashRouter`), Vite 5 |
 | Runtime | Node.js **22.5 atau lebih baru** |
 
 > Back-end memakai SQLite bawaan Node.js, sehingga tidak ada paket native yang perlu dikompilasi. Konsekuensinya, Node.js versi lama (di bawah 22.5) tidak akan bisa menjalankan back-end.
@@ -214,19 +214,8 @@ Kata sandi disimpan sebagai hash scrypt, bukan teks asli. Menghapus sebuah lomba
 
 ## Deployment
 
-### Vercel (satu link, `vercel.json`)
-
-Dua service dalam satu project: `backend` (Express) di `/api/*` dan `frontend` (Vite) di jalur lainnya. Front-end dibuild dengan `VITE_API_URL=/api` (`frontend/.env.production`).
-
-1. Impor repository di Vercel, nama project `ifs24006-pabwe2026-proyek1`. Biarkan konfigurasi multi-service dari `vercel.json`.
-2. Tambahkan Environment Variables: `JWT_SECRET` (teks acak panjang) dan `ADMIN_PASSWORD`.
-3. Deploy. Aplikasi ada di `https://ifs24006-pabwe2026-proyek1.vercel.app`, API di `/api`.
-
-Catatan: di Vercel, SQLite disimpan di `/tmp` sehingga bersifat sementara. Data awal dan akun admin dibuat ulang otomatis saat instance baru, tetapi akun dan lomba yang ditambahkan pengguna dapat hilang.
-
-### Render (alternatif, data permanen)
-
-`render.yaml` menjalankan API sekaligus menyajikan front-end hasil build dalam satu service dengan disk persisten (plan berbayar).
+- **Back-end (Render, `render.yaml`)**: buat *Blueprint* dari repository ini. Isi `ADMIN_PASSWORD` saat diminta. `JWT_SECRET` dibuat otomatis. Setelah aktif, cek `https://<nama-service>.onrender.com/api`.
+- **Front-end (Vercel)**: impor repository, lalu atur **Root Directory = `frontend`**, Framework Preset = Vite, dan environment variable `VITE_API_URL = https://<nama-service>.onrender.com/api` (diisi sebelum build). Jangan memakai mode multi-service Vercel, karena SQLite tidak dapat menyimpan data permanen di Vercel.
 
 ## Pengujian dan Deployment (Jenkins)
 

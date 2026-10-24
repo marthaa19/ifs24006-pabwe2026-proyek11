@@ -53,7 +53,7 @@ function Bentuk({ daftar }) {
         </div>
         <p className="auth__alt">
           {daftar ? 'Sudah punya akun? ' : 'Belum punya akun? '}
-          <Link to={daftar ? '/auth/login' : '/auth/register'} state={{ dari }}>{daftar ? 'Masuk' : 'Daftar'}</Link>
+          <Link to={daftar ? '/masuk' : '/daftar'} state={{ dari }}>{daftar ? 'Masuk' : 'Daftar'}</Link>
         </p>
       </form>
     </>
