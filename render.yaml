@@ -1,0 +1,27 @@
+# Blueprint Render untuk back-end (Express + SQLite).
+# Disk persisten (agar data SQLite tidak hilang) butuh plan berbayar (starter).
+# Front-end di-deploy terpisah ke Vercel (Root Directory = frontend).
+services:
+  - type: web
+    name: lombaradar-api
+    runtime: node
+    rootDir: backend
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm run seed && npm start
+    healthCheckPath: /api
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DB_PATH
+        value: /var/data/lombaradar.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@lombaradar.id
+      - key: ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1

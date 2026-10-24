@@ -212,6 +212,11 @@ bookmark  (id, user_id -> users.id, lomba_id -> lomba.id, catatan, created_at,
 
 Kata sandi disimpan sebagai hash scrypt, bukan teks asli. Menghapus sebuah lomba otomatis menghapus bookmark yang terkait.
 
+## Deployment
+
+- **Back-end (Render, `render.yaml`)**: buat *Blueprint* dari repository ini. Isi `ADMIN_PASSWORD` saat diminta. `JWT_SECRET` dibuat otomatis. Setelah aktif, cek `https://<nama-service>.onrender.com/api`.
+- **Front-end (Vercel)**: impor repository, lalu atur **Root Directory = `frontend`**, Framework Preset = Vite, dan environment variable `VITE_API_URL = https://<nama-service>.onrender.com/api` (diisi sebelum build). Jangan memakai mode multi-service Vercel, karena SQLite tidak dapat menyimpan data permanen di Vercel.
+
 ## Pengujian dan Deployment (Jenkins)
 
 ### Menjalankan test secara lokal
