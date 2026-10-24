@@ -56,6 +56,21 @@ describe('Status API dan 404', () => {
   });
 });
 
+describe('Halaman /auth/login dan /auth/register', () => {
+  test('GET /auth/login → 200 HTML yang mengarah ke /#/masuk', async () => {
+    const res = await fetch(s.base + '/auth/login');
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('content-type'), /text\/html/);
+    assert.match(await res.text(), /#\/masuk/);
+  });
+
+  test('GET /auth/register → 200 HTML yang mengarah ke /#/daftar', async () => {
+    const res = await fetch(s.base + '/auth/register');
+    assert.equal(res.status, 200);
+    assert.match(await res.text(), /#\/daftar/);
+  });
+});
+
 describe('Auth', () => {
   test('register berhasil: 201, token, role mahasiswa, tanpa password', async () => {
     const r = await s.req('POST', '/api/auth/register', { body: { nama: 'Citra', email: '  Citra@Uji.ID ', password: 'citra123' } });
