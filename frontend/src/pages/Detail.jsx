@@ -55,10 +55,18 @@ export default function Detail() {
     }
   }
 
-  if (loading) return <p className="notice">Memuat detail lomba…</p>;
+  if (loading) {
+    return (
+      <>
+        <h1 className="visually-hidden">Memuat detail lomba</h1>
+        <p className="notice">Memuat detail lomba…</p>
+      </>
+    );
+  }
   if (error && !lomba) {
     return (
       <>
+        <h1 className="visually-hidden">Detail lomba tidak tersedia</h1>
         <p className="notice notice--error" role="alert">{error}</p>
         <p><Link to="/">Kembali ke beranda</Link></p>
       </>

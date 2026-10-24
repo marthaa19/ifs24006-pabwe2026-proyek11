@@ -5,7 +5,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Detail from '../pages/Detail.jsx';
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
-import { bekukanTanggal, lombaContoh } from './helpers.jsx';
+import { bekukanTanggal, lombaContoh } from '../test-utils.jsx';
 
 vi.mock('../api.js', () => ({
   api: { getLombaById: vi.fn(), simpanBookmark: vi.fn(), hapusBookmark: vi.fn(), hapusLomba: vi.fn() },

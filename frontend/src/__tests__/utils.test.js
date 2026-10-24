@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import { formatTanggal, hariTersisa, infoDeadline } from '../utils.js';
-import { bekukanTanggal } from './helpers.jsx';
+import { bekukanTanggal } from '../test-utils.jsx';
 
 beforeEach(bekukanTanggal); // hari ini = 24 Oktober 2026
 

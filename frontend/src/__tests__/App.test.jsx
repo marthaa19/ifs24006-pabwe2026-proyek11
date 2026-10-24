@@ -87,9 +87,9 @@ describe('rute yang dilindungi', () => {
     ['/tersimpan'],
     ['/lomba/baru'],
     ['/lomba/3/edit'],
-  ])('tamu yang membuka %s diarahkan ke halaman Masuk', (path) => {
+  ])('tamu yang membuka %s diarahkan ke halaman Masuk', async (path) => {
     tampil(path);
-    expect(screen.getByRole('heading', { name: 'Masuk' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Masuk' })).toBeInTheDocument();
   });
 
   test('menunggu pemulihan sesi menampilkan "Memuat…" (bukan redirect)', () => {
@@ -111,8 +111,31 @@ describe('rute yang dilindungi', () => {
     expect(await screen.findByRole('heading', { name: 'Tambah lomba' })).toBeInTheDocument();
   });
 
-  test('halaman Daftar dapat dibuka tanpa login', () => {
+  test('halaman Daftar dapat dibuka tanpa login', async () => {
     tampil('/daftar');
-    expect(screen.getByRole('heading', { name: 'Buat akun' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Buat akun' })).toBeInTheDocument();
+  });
+});
+
+describe('struktur heading (aksesibilitas)', () => {
+  test('halaman Masuk langsung punya satu h1, tanpa menunggu', () => {
+    tampil('/masuk');
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+  });
+
+  test('halaman Daftar langsung punya satu h1, tanpa menunggu', () => {
+    tampil('/daftar');
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+  });
+
+  test('halaman tidak ditemukan punya h1', () => {
+    tampil('/tidak-ada');
+    expect(screen.getByRole('heading', { level: 1, name: 'Halaman tidak ditemukan' })).toBeInTheDocument();
+  });
+
+  test('keadaan memuat tetap punya h1 (Beranda tidak ditunda oleh lazy loading)', async () => {
+    tampil('/');
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Deadline terdekat' })).toBeInTheDocument();
   });
 });

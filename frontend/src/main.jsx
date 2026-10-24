@@ -4,6 +4,8 @@ import { HashRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { AuthProvider } from './AuthContext.jsx';
 import { hashUntukPath } from './authPath.js';
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/fraunces';
 import './styles.css';
 
 // /auth/login dan /auth/register langsung menampilkan form (sebelum React dirender).

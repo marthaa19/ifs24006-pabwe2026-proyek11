@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Beranda from '../pages/Beranda.jsx';
 import { api } from '../api.js';
-import { bekukanTanggal, lombaContoh } from './helpers.jsx';
+import { bekukanTanggal, lombaContoh } from '../test-utils.jsx';
 
 vi.mock('../api.js', () => ({
   api: { getKategori: vi.fn(), getLomba: vi.fn(), simpanBookmark: vi.fn(), hapusBookmark: vi.fn() },

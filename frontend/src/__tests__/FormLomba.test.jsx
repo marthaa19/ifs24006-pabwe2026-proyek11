@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import FormLomba from '../pages/FormLomba.jsx';
 import { api } from '../api.js';
-import { lombaContoh } from './helpers.jsx';
+import { lombaContoh } from '../test-utils.jsx';
 
 vi.mock('../api.js', () => ({
   api: { getKategori: vi.fn(), getLombaById: vi.fn(), tambahLomba: vi.fn(), ubahLomba: vi.fn() },

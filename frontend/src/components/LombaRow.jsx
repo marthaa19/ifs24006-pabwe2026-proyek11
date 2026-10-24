@@ -28,9 +28,9 @@ export default function LombaRow({ lomba, onToggle, children }) {
       </div>
 
       <div className="row__body">
-        <h3 className="row__title">
+        <h2 className="row__title">
           <Link to={`/lomba/${lomba.id}`}>{lomba.judul}</Link>
-        </h3>
+        </h2>
         <p className="row__by">{lomba.penyelenggara}</p>
         <ul className="tags">
           {tags.map((t) => (

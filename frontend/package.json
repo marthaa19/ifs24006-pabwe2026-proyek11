@@ -1,5 +1,5 @@
 {
-  "name": "lombaradar-frontend",
+  "name": "ifs24006-pabwe2026-proyek1-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -9,9 +9,12 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ci": "vitest run --reporter=default --reporter=junit --outputFile.junit=test-results/junit.xml"
+    "test:ci": "vitest run --reporter=default --reporter=junit --outputFile.junit=test-results/junit.xml",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"
@@ -21,9 +24,13 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
-    "@vitejs/plugin-react": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/coverage-v8": "^5.0.5",
     "jsdom": "^25.0.1",
-    "vite": "^5.4.10",
-    "vitest": "^2.1.8"
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

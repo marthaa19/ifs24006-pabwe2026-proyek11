@@ -41,15 +41,15 @@ function Bentuk({ daftar }) {
           </div>
         )}
         <div className="field">
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" className="input" value={f.email} onChange={ubah('email')} autoComplete="email" required />
+          <label htmlFor="username">Email</label>
+          <input id="username" name="username" type="email" className="input" value={f.email} onChange={ubah('email')} autoComplete="email" required />
         </div>
         <div className="field">
           <label htmlFor="password">Kata sandi</label>
-          <input id="password" type="password" className="input" value={f.password} onChange={ubah('password')} autoComplete={daftar ? 'new-password' : 'current-password'} required />
+          <input id="password" name="password" type="password" className="input" value={f.password} onChange={ubah('password')} autoComplete={daftar ? 'new-password' : 'current-password'} required />
         </div>
         <div className="form__actions">
-          <button className="btn" disabled={loading}>{loading ? 'Memproses…' : daftar ? 'Buat akun' : 'Masuk'}</button>
+          <button id="btn-submit" type="submit" className="btn" disabled={loading}>{loading ? 'Memproses…' : daftar ? 'Buat akun' : 'Masuk'}</button>
         </div>
         <p className="auth__alt">
           {daftar ? 'Sudah punya akun? ' : 'Belum punya akun? '}
