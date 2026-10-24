@@ -18,29 +18,18 @@ app.get('/api', (req, res) => {
   res.json({ nama: 'LombaRadar API', status: 'ok' });
 });
 
-// Alamat halaman berbasis path (/auth/login, /auth/register) untuk pengecekan eksternal.
-// Front-end memakai HashRouter, jadi halaman ini mengarahkan ke rute hash yang sesuai.
-const halamanAuth = { '/auth/login': '/#/masuk', '/auth/register': '/#/daftar' };
-app.get(Object.keys(halamanAuth), (req, res) => {
-  const tujuan = halamanAuth[req.path];
-  const judul = req.path === '/auth/login' ? 'Masuk' : 'Daftar';
-  res.status(200).type('html').send(
-    `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${judul} - LombaRadar</title>` +
-    `<meta http-equiv="refresh" content="0;url=${tujuan}"><script>location.replace(${JSON.stringify(tujuan)});</script></head>` +
-    `<body><p>Mengarahkan ke halaman ${judul}... <a href="${tujuan}">Klik di sini</a> jika tidak berpindah otomatis.</p></body></html>`
-  );
-});
-
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/kategori', require('./routes/kategori'));
 app.use('/api/lomba', require('./routes/lomba'));
 app.use('/api/bookmark', require('./routes/bookmark'));
 
 // Produksi satu-link: jika front-end sudah di-build (frontend/dist), Express ikut menyajikannya.
-// Front-end memakai HashRouter, jadi tidak perlu fallback rute.
-const distDir = path.join(__dirname, '..', 'frontend', 'dist');
+// Front-end memakai BrowserRouter, jadi alamat seperti /auth/login dan /auth/register harus
+// menjawab index.html (React Router yang menampilkan halamannya, alamat di browser tidak berubah).
+const distDir = process.env.FRONTEND_DIST || path.join(__dirname, '..', 'frontend', 'dist');
 if (fs.existsSync(path.join(distDir, 'index.html'))) {
   app.use(express.static(distDir));
+  app.get(/^\/(?!api(?:\/|$)).*/, (req, res) => res.sendFile(path.join(distDir, 'index.html')));
 }
 
 app.use((req, res) => res.status(404).json({ error: 'Endpoint tidak ditemukan' }));

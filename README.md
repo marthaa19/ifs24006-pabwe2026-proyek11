@@ -24,7 +24,7 @@ Proyek 1 mata kuliah **Pengembangan Aplikasi Berbasis Web (PABWE) 2026**, dikerj
 | Lapisan | Teknologi |
 |---|---|
 | Back-end | Express.js 4, SQLite (modul bawaan `node:sqlite`), CORS |
-| Front-end | ReactJS 18, React Router 6 (`HashRouter`), Vite 5 |
+| Front-end | ReactJS 18, React Router 6 (`BrowserRouter`), Vite 5 |
 | Runtime | Node.js **22.5 atau lebih baru** |
 
 > Back-end memakai SQLite bawaan Node.js, sehingga tidak ada paket native yang perlu dikompilasi. Konsekuensinya, Node.js versi lama (di bawah 22.5) tidak akan bisa menjalankan back-end.

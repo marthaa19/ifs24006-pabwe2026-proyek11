@@ -2,9 +2,15 @@
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { siapkanDb, tanggal, mulaiServer } = require('./helpers');
 
 const dir = siapkanDb();
+// Folder front-end tiruan agar server menyajikan index.html untuk alamat berbasis path.
+const distUji = fs.mkdtempSync(path.join(os.tmpdir(), 'dist-uji-'));
+fs.writeFileSync(path.join(distUji, 'index.html'), '<!doctype html><html><body><div id="root"></div></body></html>');
+process.env.FRONTEND_DIST = distUji;
 const app = require('../server');
 const db = require('../db');
 const { hashPassword } = require('../auth');
@@ -57,17 +63,19 @@ describe('Status API dan 404', () => {
 });
 
 describe('Halaman /auth/login dan /auth/register', () => {
-  test('GET /auth/login → 200 HTML yang mengarah ke /#/masuk', async () => {
-    const res = await fetch(s.base + '/auth/login');
-    assert.equal(res.status, 200);
-    assert.match(res.headers.get('content-type'), /text\/html/);
-    assert.match(await res.text(), /#\/masuk/);
-  });
+  for (const alamat of ['/auth/login', '/auth/register']) {
+    test(`GET ${alamat} → 200 index.html tanpa redirect`, async () => {
+      const res = await fetch(s.base + alamat, { redirect: 'manual' });
+      assert.equal(res.status, 200);
+      assert.match(res.headers.get('content-type'), /text\/html/);
+      assert.match(await res.text(), /id="root"/);
+    });
+  }
 
-  test('GET /auth/register → 200 HTML yang mengarah ke /#/daftar', async () => {
-    const res = await fetch(s.base + '/auth/register');
-    assert.equal(res.status, 200);
-    assert.match(await res.text(), /#\/daftar/);
+  test('alamat /api yang tidak ada tetap 404 JSON, bukan index.html', async () => {
+    const r = await s.req('GET', '/api/tidak-ada');
+    assert.equal(r.status, 404);
+    assert.ok(r.body.error);
   });
 });
 

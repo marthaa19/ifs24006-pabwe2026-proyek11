@@ -48,8 +48,8 @@ describe('layout dan navigasi', () => {
 
   test('tamu melihat tombol Masuk dan Daftar', () => {
     tampil('/');
-    expect(screen.getByRole('link', { name: 'Masuk' })).toHaveAttribute('href', '/masuk');
-    expect(screen.getByRole('link', { name: 'Daftar' })).toHaveAttribute('href', '/daftar');
+    expect(screen.getByRole('link', { name: 'Masuk' })).toHaveAttribute('href', '/auth/login');
+    expect(screen.getByRole('link', { name: 'Daftar' })).toHaveAttribute('href', '/auth/register');
   });
 
   test('mahasiswa yang masuk melihat nama dan lencana MAHASISWA', () => {
@@ -112,7 +112,7 @@ describe('rute yang dilindungi', () => {
   });
 
   test('halaman Daftar dapat dibuka tanpa login', () => {
-    tampil('/daftar');
+    tampil('/auth/register');
     expect(screen.getByRole('heading', { name: 'Buat akun' })).toBeInTheDocument();
   });
 });

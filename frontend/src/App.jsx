@@ -21,7 +21,7 @@ function Wajib({ children }) {
   const { user, siap } = useAuth();
   const lokasi = useLocation();
   if (!siap) return <p className="notice">Memuat…</p>;
-  if (!user) return <Navigate to="/masuk" replace state={{ dari: lokasi.pathname }} />;
+  if (!user) return <Navigate to="/auth/login" replace state={{ dari: lokasi.pathname }} />;
   return children;
 }
 
@@ -30,8 +30,8 @@ function Akun() {
   if (!user) {
     return (
       <div className="akun">
-        <Link to="/masuk" className="btn btn--ghost btn--small">Masuk</Link>
-        <Link to="/daftar" className="btn btn--small">Daftar</Link>
+        <Link to="/auth/login" className="btn btn--ghost btn--small">Masuk</Link>
+        <Link to="/auth/register" className="btn btn--small">Daftar</Link>
       </div>
     );
   }
@@ -75,8 +75,10 @@ export default function App() {
       <main className="container">
         <Routes>
           <Route path="/" element={<Beranda />} />
-          <Route path="/masuk" element={<Masuk />} />
-          <Route path="/daftar" element={<Daftar />} />
+          <Route path="/auth/login" element={<Masuk />} />
+          <Route path="/auth/register" element={<Daftar />} />
+          <Route path="/masuk" element={<Navigate to="/auth/login" replace />} />
+          <Route path="/daftar" element={<Navigate to="/auth/register" replace />} />
           <Route path="/lomba/baru" element={<Wajib><FormLomba /></Wajib>} />
           <Route path="/lomba/:id" element={<Detail />} />
           <Route path="/lomba/:id/edit" element={<Wajib><FormLomba /></Wajib>} />
