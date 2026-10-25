@@ -1,10 +1,9 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
 import Beranda from '../pages/Beranda.jsx';
 import { api } from '../api.js';
-import { bekukanTanggal, lombaContoh } from '../test-utils.jsx';
+import { bekukanTanggal, lombaContoh, renderDiRouter } from '../test-utils.jsx';
 
 vi.mock('../api.js', () => ({
   api: { getKategori: vi.fn(), getLomba: vi.fn(), simpanBookmark: vi.fn(), hapusBookmark: vi.fn() },
@@ -17,12 +16,7 @@ const DAFTAR = [
   lombaContoh({ id: 2, judul: 'Desain Aplikasi', kategori_nama: 'UI/UX', deadline: '2026-11-10', tersimpan: 1 }),
 ];
 
-const tampil = () =>
-  render(
-    <MemoryRouter>
-      <Beranda />
-    </MemoryRouter>
-  );
+const tampil = () => renderDiRouter(<Beranda />);
 
 beforeEach(() => {
   bekukanTanggal();

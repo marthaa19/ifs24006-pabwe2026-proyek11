@@ -42,12 +42,14 @@ Proyek 1 mata kuliah **Pengembangan Aplikasi Berbasis Web (PABWE) 2026**, dikerj
 ```
 .
 ├── src/
-│   ├── App.jsx            # layout dan routing
+│   ├── App.jsx            # routing (halaman dimuat lazy)
 │   ├── api.js             # pemanggilan API
 │   ├── AuthContext.jsx    # status akun yang sedang masuk
 │   ├── authPath.js        # pemetaan /auth/login dan /auth/register ke rute
+│   ├── constants.js       # daftar pilihan (tingkat, pelaksanaan, biaya, urutan, status)
 │   ├── utils.js           # format tanggal dan hitung deadline
-│   ├── components/LombaRow.jsx
+│   ├── hooks/             # useAsync, useBookmark, useGuard, useForm, useSubmit, useDebounced
+│   ├── components/        # Header, Wajib, Field, FilterBar, LombaRow, BookmarkPanel, CatatanEditor, PageHead, Status
 │   ├── pages/             # Beranda, Detail, FormLomba, Tersimpan, Auth
 │   ├── __tests__/         # pengujian (Vitest)
 │   ├── setupTests.js

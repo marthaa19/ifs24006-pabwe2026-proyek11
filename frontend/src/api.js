@@ -31,18 +31,21 @@ function bersihkan(params) {
   return out;
 }
 
+// Permintaan dengan method dan (opsional) body JSON.
+const kirim = (method, path, body) =>
+  request(path, body === undefined ? { method } : { method, body: JSON.stringify(body) });
+
 export const api = {
-  register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
-  login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  register: (body) => kirim('POST', '/auth/register', body),
+  login: (body) => kirim('POST', '/auth/login', body),
   me: () => request('/auth/me'),
   getLomba: (params) => request('/lomba?' + new URLSearchParams(bersihkan(params))),
   getLombaById: (id) => request(`/lomba/${id}`),
-  tambahLomba: (body) => request('/lomba', { method: 'POST', body: JSON.stringify(body) }),
-  ubahLomba: (id, body) => request(`/lomba/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-  hapusLomba: (id) => request(`/lomba/${id}`, { method: 'DELETE' }),
+  tambahLomba: (body) => kirim('POST', '/lomba', body),
+  ubahLomba: (id, body) => kirim('PUT', `/lomba/${id}`, body),
+  hapusLomba: (id) => kirim('DELETE', `/lomba/${id}`),
   getKategori: () => request('/kategori'),
   getBookmark: () => request('/bookmark'),
-  simpanBookmark: (lomba_id, catatan) =>
-    request('/bookmark', { method: 'POST', body: JSON.stringify({ lomba_id, catatan }) }),
-  hapusBookmark: (lomba_id) => request(`/bookmark/${lomba_id}`, { method: 'DELETE' }),
+  simpanBookmark: (lomba_id, catatan) => kirim('POST', '/bookmark', { lomba_id, catatan }),
+  hapusBookmark: (lomba_id) => kirim('DELETE', `/bookmark/${lomba_id}`),
 };

@@ -1,74 +1,24 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api.js';
+import CatatanEditor from '../components/CatatanEditor.jsx';
 import LombaRow from '../components/LombaRow.jsx';
-
-function CatatanEditor({ lomba, onHapus }) {
-  const [catatan, setCatatan] = useState(lomba.catatan || '');
-  const [status, setStatus] = useState('');
-
-  async function simpan() {
-    try {
-      await api.simpanBookmark(lomba.id, catatan);
-      setStatus('Catatan disimpan');
-    } catch (e) {
-      setStatus(e.message);
-    }
-  }
-
-  return (
-    <div className="catatan">
-      <label htmlFor={`catatan-${lomba.id}`}>Catatan untuk lomba ini</label>
-      <textarea
-        id={`catatan-${lomba.id}`}
-        className="input"
-        rows="2"
-        value={catatan}
-        onChange={(e) => {
-          setCatatan(e.target.value);
-          setStatus('');
-        }}
-        placeholder="Misalnya: ajak tim, siapkan proposal"
-      />
-      <div className="catatan__actions">
-        <button type="button" className="btn btn--small" onClick={simpan}>Simpan catatan</button>
-        <button type="button" className="btn btn--small btn--ghost" onClick={() => onHapus(lomba)}>Hapus dari simpanan</button>
-        {status && <span className="catatan__status" role="status">{status}</span>}
-      </div>
-    </div>
-  );
-}
+import PageHead from '../components/PageHead.jsx';
+import { Galat } from '../components/Status.jsx';
+import { useAsync } from '../hooks/useAsync.js';
+import { useBookmark } from '../hooks/useBookmark.js';
 
 export default function Tersimpan() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api
-      .getBookmark()
-      .then(setItems)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: items, setData: setItems, loading, error, setError } = useAsync(() => api.getBookmark(), [], []);
+  const bookmark = useBookmark(setError);
 
   async function hapus(lomba) {
-    try {
-      await api.hapusBookmark(lomba.id);
-      setItems((list) => list.filter((x) => x.id !== lomba.id));
-    } catch (e) {
-      setError(e.message);
-    }
+    if (await bookmark.lepas(lomba.id)) setItems((list) => list.filter((x) => x.id !== lomba.id));
   }
 
   return (
     <>
-      <section className="pagehead">
-        <h1>Lomba tersimpan</h1>
-        <p>{loading ? 'Memuat…' : `${items.length} lomba, diurutkan dari deadline terdekat`}</p>
-      </section>
-
-      {error && <p className="notice notice--error" role="alert">{error}</p>}
+      <PageHead judul="Lomba tersimpan">{loading ? 'Memuat…' : `${items.length} lomba, diurutkan dari deadline terdekat`}</PageHead>
+      <Galat pesan={error} />
 
       {!error && !loading && items.length === 0 && (
         <div className="empty">

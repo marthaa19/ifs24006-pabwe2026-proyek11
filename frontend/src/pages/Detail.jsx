@@ -1,79 +1,54 @@
-import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
+import BookmarkPanel from '../components/BookmarkPanel.jsx';
+import { Galat, Memuat } from '../components/Status.jsx';
+import { useAsync } from '../hooks/useAsync.js';
+import { useBookmark } from '../hooks/useBookmark.js';
+import { useGuard } from '../hooks/useGuard.js';
 import { formatTanggal, infoDeadline } from '../utils.js';
 
 export default function Detail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [lomba, setLomba] = useState(null);
-  const [catatan, setCatatan] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const { data: lomba, setData: setLomba, loading, error, setError } = useAsync(() => api.getLombaById(id), [id]);
+  const bookmark = useBookmark(setError);
+  const jaga = useGuard(setError);
 
-  useEffect(() => {
-    setLoading(true);
-    api
-      .getLombaById(id)
-      .then((data) => {
-        setLomba(data);
-        setError('');
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  async function simpan() {
-    try {
-      await api.simpanBookmark(lomba.id, catatan);
-      setLomba({ ...lomba, tersimpan: 1 });
+  async function ubahSimpanan(aksi, tersimpan) {
+    if (await aksi()) {
+      setLomba({ ...lomba, tersimpan });
       setError('');
-    } catch (e) {
-      setError(e.message);
-    }
-  }
-
-  async function lepas() {
-    try {
-      await api.hapusBookmark(lomba.id);
-      setLomba({ ...lomba, tersimpan: 0 });
-      setError('');
-    } catch (e) {
-      setError(e.message);
     }
   }
 
   async function hapus() {
     if (!window.confirm(`Hapus lomba "${lomba.judul}"? Tindakan ini tidak bisa dibatalkan.`)) return;
-    try {
-      await api.hapusLomba(lomba.id);
-      navigate('/');
-    } catch (e) {
-      setError(e.message);
-    }
+    if (await jaga(() => api.hapusLomba(lomba.id))) navigate('/');
   }
 
-  if (loading) {
-    return (
-      <>
-        <h1 className="visually-hidden">Memuat detail lomba</h1>
-        <p className="notice">Memuat detail lomba…</p>
-      </>
-    );
-  }
+  if (loading) return <Memuat judul="Memuat detail lomba" teks="Memuat detail lomba…" />;
   if (error && !lomba) {
     return (
       <>
         <h1 className="visually-hidden">Detail lomba tidak tersedia</h1>
-        <p className="notice notice--error" role="alert">{error}</p>
+        <Galat pesan={error} />
         <p><Link to="/">Kembali ke beranda</Link></p>
       </>
     );
   }
 
   const d = infoDeadline(lomba.deadline);
+  const fakta = [
+    ['Kategori', lomba.kategori_nama],
+    ['Tingkat', lomba.tingkat],
+    ['Pelaksanaan', lomba.mode],
+    ['Biaya', lomba.biaya],
+    ['Hadiah', lomba.hadiah],
+    ['Deadline', formatTanggal(lomba.deadline)],
+  ];
+  const bisaKelola = user && (user.role === 'admin' || lomba.created_by === user.id);
 
   return (
     <article className="detail">
@@ -90,17 +65,14 @@ export default function Detail() {
         </div>
       </header>
 
-      {error && <p className="notice notice--error" role="alert">{error}</p>}
+      <Galat pesan={error} />
 
       {lomba.deskripsi && <p className="detail__desc">{lomba.deskripsi}</p>}
 
       <dl className="facts">
-        <div><dt>Kategori</dt><dd>{lomba.kategori_nama}</dd></div>
-        <div><dt>Tingkat</dt><dd>{lomba.tingkat || '-'}</dd></div>
-        <div><dt>Pelaksanaan</dt><dd>{lomba.mode || '-'}</dd></div>
-        <div><dt>Biaya</dt><dd>{lomba.biaya || '-'}</dd></div>
-        <div><dt>Hadiah</dt><dd>{lomba.hadiah || '-'}</dd></div>
-        <div><dt>Deadline</dt><dd>{formatTanggal(lomba.deadline)}</dd></div>
+        {fakta.map(([nama, nilai]) => (
+          <div key={nama}><dt>{nama}</dt><dd>{nilai || '-'}</dd></div>
+        ))}
       </dl>
 
       {lomba.link_pendaftaran && (
@@ -111,29 +83,13 @@ export default function Detail() {
         </p>
       )}
 
-      <section className="panel">
-        {lomba.tersimpan ? (
-          <>
-            <p>Lomba ini ada di daftar simpananmu. Ubah catatan di halaman <Link to="/tersimpan">Tersimpan</Link>.</p>
-            <button type="button" className="btn btn--ghost" onClick={lepas}>Hapus dari simpanan</button>
-          </>
-        ) : (
-          <>
-            <label htmlFor="catatan">Catatan (opsional)</label>
-            <textarea
-              id="catatan"
-              className="input"
-              rows="2"
-              value={catatan}
-              onChange={(e) => setCatatan(e.target.value)}
-              placeholder="Misalnya: cari anggota tim"
-            />
-            <button type="button" className="btn" onClick={simpan}>Simpan lomba</button>
-          </>
-        )}
-      </section>
+      <BookmarkPanel
+        tersimpan={Boolean(lomba.tersimpan)}
+        onSimpan={(catatan) => ubahSimpanan(() => bookmark.simpan(lomba.id, catatan), 1)}
+        onLepas={() => ubahSimpanan(() => bookmark.lepas(lomba.id), 0)}
+      />
 
-      {user && (user.role === 'admin' || lomba.created_by === user.id) && (
+      {bisaKelola && (
         <section className="admin">
           <Link className="btn btn--ghost" to={`/lomba/${lomba.id}/edit`}>Edit lomba</Link>
           <button type="button" className="btn btn--danger" onClick={hapus}>Hapus lomba</button>

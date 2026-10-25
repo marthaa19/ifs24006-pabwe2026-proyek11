@@ -1,15 +1,9 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { screen, fireEvent } from '@testing-library/react';
 import LombaRow from '../components/LombaRow.jsx';
-import { bekukanTanggal, lombaContoh } from '../test-utils.jsx';
+import { bekukanTanggal, lombaContoh, renderDiRouter } from '../test-utils.jsx';
 
-const tampil = (props) =>
-  render(
-    <MemoryRouter>
-      <LombaRow {...props} />
-    </MemoryRouter>
-  );
+const tampil = (props) => renderDiRouter(<LombaRow {...props} />);
 
 beforeEach(bekukanTanggal);
 

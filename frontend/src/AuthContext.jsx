@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { api, getToken, setToken } from './api.js';
 
 const Ctx = createContext(null);
@@ -13,20 +13,19 @@ export function AuthProvider({ children }) {
     api.me().then(setUser).catch(() => setToken(null)).finally(() => setSiap(true));
   }, []);
 
-  async function masuk(email, password) {
-    const r = await api.login({ email, password });
-    setToken(r.token);
-    setUser(r.user);
-  }
-  async function daftar(data) {
-    const r = await api.register(data);
-    setToken(r.token);
-    setUser(r.user);
-  }
-  function keluar() {
-    setToken(null);
-    setUser(null);
-  }
+  const value = useMemo(() => {
+    const mulai = (r) => {
+      setToken(r.token);
+      setUser(r.user);
+    };
+    return {
+      user,
+      siap,
+      masuk: (email, password) => api.login({ email, password }).then(mulai),
+      daftar: (data) => api.register(data).then(mulai),
+      keluar: () => mulai({ token: null, user: null }),
+    };
+  }, [user, siap]);
 
-  return <Ctx.Provider value={{ user, siap, masuk, daftar, keluar }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -1,5 +1,8 @@
 node_modules/
-data/*.db
+coverage/
+data/
 .env
-
+.trivy-cache/
+trivy-results.sarif
+latest-app.zip
 test-results/

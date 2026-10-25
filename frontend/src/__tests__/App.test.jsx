@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { renderDiRouter } from '../test-utils.jsx';
 import App from '../App.jsx';
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
@@ -16,12 +16,7 @@ vi.mock('../api.js', () => ({
 }));
 vi.mock('../AuthContext.jsx', () => ({ useAuth: vi.fn() }));
 
-const tampil = (path = '/') =>
-  render(
-    <MemoryRouter initialEntries={[path]}>
-      <App />
-    </MemoryRouter>
-  );
+const tampil = (path = '/') => renderDiRouter(<App />, path);
 
 const sebagaiTamu = () => useAuth.mockReturnValue({ user: null, siap: true, keluar: vi.fn(), masuk: vi.fn(), daftar: vi.fn() });
 const sebagai = (user, keluar = vi.fn()) => useAuth.mockReturnValue({ user, siap: true, keluar, masuk: vi.fn(), daftar: vi.fn() });

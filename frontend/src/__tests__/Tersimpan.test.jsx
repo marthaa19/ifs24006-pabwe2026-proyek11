@@ -1,10 +1,9 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
 import Tersimpan from '../pages/Tersimpan.jsx';
 import { api } from '../api.js';
-import { bekukanTanggal, lombaContoh } from '../test-utils.jsx';
+import { bekukanTanggal, lombaContoh, renderDiRouter } from '../test-utils.jsx';
 
 vi.mock('../api.js', () => ({
   api: { getBookmark: vi.fn(), simpanBookmark: vi.fn(), hapusBookmark: vi.fn() },
@@ -12,12 +11,7 @@ vi.mock('../api.js', () => ({
   setToken: vi.fn(),
 }));
 
-const tampil = () =>
-  render(
-    <MemoryRouter>
-      <Tersimpan />
-    </MemoryRouter>
-  );
+const tampil = () => renderDiRouter(<Tersimpan />);
 
 beforeEach(() => {
   bekukanTanggal();

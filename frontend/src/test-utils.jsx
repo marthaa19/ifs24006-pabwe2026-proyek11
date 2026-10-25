@@ -1,4 +1,6 @@
 import { vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 // Tanggal "hari ini" tetap agar hitung mundur deadline stabil: 24 Oktober 2026.
 // Hanya Date yang dipalsukan; setTimeout/Promise tetap asli supaya waitFor berjalan normal.
@@ -24,3 +26,7 @@ export const lombaContoh = (o = {}) => ({
   tersimpan: 0,
   ...o,
 });
+
+// Render di dalam MemoryRouter pada alamat `awal` (dipakai semua tes komponen/halaman).
+export const renderDiRouter = (ui, awal = '/') =>
+  render(<MemoryRouter initialEntries={[awal]}>{ui}</MemoryRouter>);

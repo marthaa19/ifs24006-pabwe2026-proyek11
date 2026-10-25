@@ -1,6 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
+import Field from '../components/Field.jsx';
+import PageHead from '../components/PageHead.jsx';
+import { Galat } from '../components/Status.jsx';
+import { BIAYA, MODE, TINGKAT, opsiKategori } from '../constants.js';
+import { useAsync } from '../hooks/useAsync.js';
+import { useForm } from '../hooks/useForm.js';
+import { useSubmit } from '../hooks/useSubmit.js';
 
 const KOSONG = {
   judul: '',
@@ -15,136 +22,60 @@ const KOSONG = {
   link_pendaftaran: '',
 };
 
+// Data lomba dari API -> nilai awal formulir (kolom kosong memakai nilai bawaan).
+const dariLomba = (l) => ({
+  ...Object.fromEntries(Object.keys(KOSONG).map((k) => [k, l[k] || KOSONG[k]])),
+  kategori_id: String(l.kategori_id),
+});
+
 export default function FormLomba() {
   const { id } = useParams();
   const edit = Boolean(id);
   const navigate = useNavigate();
-  const [form, setForm] = useState(KOSONG);
-  const [kategori, setKategori] = useState([]);
-  const [error, setError] = useState('');
-  const [kirim, setKirim] = useState(false);
+  const { values: form, setValues, bind } = useForm(KOSONG);
+  const { data: kategori, error: galatKategori } = useAsync(() => api.getKategori(), [], []);
+  const { data: lomba, error: galatLomba } = useAsync(() => (edit ? api.getLombaById(id) : null), [edit, id]);
 
   useEffect(() => {
-    api.getKategori().then(setKategori).catch((e) => setError(e.message));
-  }, []);
+    setValues(lomba ? dariLomba(lomba) : KOSONG);
+  }, [lomba, setValues]);
 
-  useEffect(() => {
-    if (!edit) {
-      setForm(KOSONG);
-      return;
-    }
-    api
-      .getLombaById(id)
-      .then((l) =>
-        setForm({
-          judul: l.judul || '',
-          penyelenggara: l.penyelenggara || '',
-          kategori_id: String(l.kategori_id),
-          deskripsi: l.deskripsi || '',
-          tingkat: l.tingkat || 'nasional',
-          mode: l.mode || 'online',
-          hadiah: l.hadiah || '',
-          biaya: l.biaya || 'gratis',
-          deadline: l.deadline || '',
-          link_pendaftaran: l.link_pendaftaran || '',
-        })
-      )
-      .catch((e) => setError(e.message));
-  }, [edit, id]);
+  const { onSubmit, loading, error: galatKirim } = useSubmit(async () => {
+    const payload = { ...form, kategori_id: Number(form.kategori_id) };
+    const hasil = edit ? await api.ubahLomba(id, payload) : await api.tambahLomba(payload);
+    navigate(`/lomba/${hasil.id}`);
+  });
 
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-
-  async function submit(e) {
-    e.preventDefault();
-    setError('');
-    setKirim(true);
-    try {
-      const payload = { ...form, kategori_id: Number(form.kategori_id) };
-      const hasil = edit ? await api.ubahLomba(id, payload) : await api.tambahLomba(payload);
-      navigate(`/lomba/${hasil.id}`);
-    } catch (err) {
-      setError(err.message);
-      setKirim(false);
-    }
-  }
+  const kembali = edit ? `/lomba/${id}` : '/';
 
   return (
     <>
-      <p><Link to={edit ? `/lomba/${id}` : '/'} className="backlink">Kembali</Link></p>
-      <section className="pagehead">
-        <h1>{edit ? 'Edit lomba' : 'Tambah lomba'}</h1>
-      </section>
+      <p><Link to={kembali} className="backlink">Kembali</Link></p>
+      <PageHead judul={edit ? 'Edit lomba' : 'Tambah lomba'} />
+      <Galat pesan={galatKirim || galatLomba || galatKategori} />
 
-      {error && <p className="notice notice--error" role="alert">{error}</p>}
-
-      <form className="form" onSubmit={submit}>
-        <div className="field">
-          <label htmlFor="judul">Judul lomba</label>
-          <input id="judul" className="input" required value={form.judul} onChange={set('judul')} />
-        </div>
-        <div className="field">
-          <label htmlFor="penyelenggara">Penyelenggara</label>
-          <input id="penyelenggara" className="input" required value={form.penyelenggara} onChange={set('penyelenggara')} />
-        </div>
+      <form className="form" onSubmit={onSubmit}>
+        <Field id="judul" label="Judul lomba" required {...bind('judul')} />
+        <Field id="penyelenggara" label="Penyelenggara" required {...bind('penyelenggara')} />
 
         <div className="field-row">
-          <div className="field">
-            <label htmlFor="kategori">Kategori</label>
-            <select id="kategori" className="input" required value={form.kategori_id} onChange={set('kategori_id')}>
-              <option value="">Pilih kategori</option>
-              {kategori.map((k) => (
-                <option key={k.id} value={k.id}>{k.nama}</option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="deadline">Deadline pendaftaran</label>
-            <input id="deadline" type="date" className="input" required value={form.deadline} onChange={set('deadline')} />
-          </div>
+          <Field id="kategori" label="Kategori" as="select" required kosong="Pilih kategori" options={opsiKategori(kategori)} {...bind('kategori_id')} />
+          <Field id="deadline" label="Deadline pendaftaran" type="date" required {...bind('deadline')} />
         </div>
 
         <div className="field-row field-row--3">
-          <div className="field">
-            <label htmlFor="tingkat">Tingkat</label>
-            <select id="tingkat" className="input" value={form.tingkat} onChange={set('tingkat')}>
-              <option value="kampus">Kampus</option>
-              <option value="nasional">Nasional</option>
-              <option value="internasional">Internasional</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="mode">Pelaksanaan</label>
-            <select id="mode" className="input" value={form.mode} onChange={set('mode')}>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-              <option value="hybrid">Hybrid</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="biaya">Biaya</label>
-            <select id="biaya" className="input" value={form.biaya} onChange={set('biaya')}>
-              <option value="gratis">Gratis</option>
-              <option value="berbayar">Berbayar</option>
-            </select>
-          </div>
+          <Field id="tingkat" label="Tingkat" as="select" options={TINGKAT} {...bind('tingkat')} />
+          <Field id="mode" label="Pelaksanaan" as="select" options={MODE} {...bind('mode')} />
+          <Field id="biaya" label="Biaya" as="select" options={BIAYA} {...bind('biaya')} />
         </div>
 
-        <div className="field">
-          <label htmlFor="hadiah">Hadiah</label>
-          <input id="hadiah" className="input" value={form.hadiah} onChange={set('hadiah')} placeholder="Misalnya: Rp5.000.000 dan sertifikat" />
-        </div>
-        <div className="field">
-          <label htmlFor="link">Link pendaftaran</label>
-          <input id="link" type="url" className="input" value={form.link_pendaftaran} onChange={set('link_pendaftaran')} placeholder="https://" />
-        </div>
-        <div className="field">
-          <label htmlFor="deskripsi">Deskripsi</label>
-          <textarea id="deskripsi" className="input" rows="4" value={form.deskripsi} onChange={set('deskripsi')} />
-        </div>
+        <Field id="hadiah" label="Hadiah" placeholder="Misalnya: Rp5.000.000 dan sertifikat" {...bind('hadiah')} />
+        <Field id="link" label="Link pendaftaran" type="url" placeholder="https://" {...bind('link_pendaftaran')} />
+        <Field id="deskripsi" label="Deskripsi" as="textarea" rows="4" {...bind('deskripsi')} />
 
         <div className="form__actions">
-          <button type="submit" className="btn" disabled={kirim}>{kirim ? 'Menyimpan…' : 'Simpan lomba'}</button>
-          <Link className="btn btn--ghost" to={edit ? `/lomba/${id}` : '/'}>Batal</Link>
+          <button type="submit" className="btn" disabled={loading}>{loading ? 'Menyimpan…' : 'Simpan lomba'}</button>
+          <Link className="btn btn--ghost" to={kembali}>Batal</Link>
         </div>
       </form>
     </>
